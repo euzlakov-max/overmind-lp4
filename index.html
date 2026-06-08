@@ -108,6 +108,7 @@ const CONFIG = {
   STEAM_APPID:     "2691090",                     // appid игры в Steam
   STEAM_URL:       "https://store.steampowered.com/app/2691090/14__Overmind/?utm_source=tiktok_test_1",
   GAME_NAME:       "14 — Overmind",
+  STEAM_LANG:      "auto",                        // "auto" = язык браузера посетителя; или фиксируй: "russian","english","german"...
   PASS_THROUGH:    ["utm_source","utm_medium","utm_campaign","utm_content","utm_term","ttclid","fbclid","gclid"]
 };
 
@@ -171,9 +172,29 @@ btn.addEventListener("click", () => {
 (function () {
   const widget = document.getElementById("steamWidget");
   if (!widget) return;
+
+  // Язык виджета: фиксированный из CONFIG или по языку браузера посетителя.
+  const LANG_MAP = {
+    en:"english", ru:"russian", de:"german", fr:"french", es:"spanish",
+    pt:"portuguese", it:"italian", pl:"polish", tr:"turkish", uk:"ukrainian",
+    ja:"japanese", ko:"koreana", zh:"schinese", nl:"dutch", sv:"swedish",
+    da:"danish", fi:"finnish", no:"norwegian", nb:"norwegian", cs:"czech",
+    hu:"hungarian", ro:"romanian", el:"greek", th:"thai", vi:"vietnamese",
+    id:"indonesian", bg:"bulgarian"
+  };
+  function steamLang() {
+    if (CONFIG.STEAM_LANG && CONFIG.STEAM_LANG !== "auto") return CONFIG.STEAM_LANG;
+    const nav = (navigator.language || "en").toLowerCase();
+    if (nav === "pt-br") return "brazilian";
+    if (nav === "zh-tw" || nav === "zh-hk") return "tchinese";
+    if (nav.startsWith("es-419") || nav === "es-mx" || nav === "es-ar") return "latam";
+    return LANG_MAP[nav.split("-")[0]] || "english";
+  }
+
   const wu = new URL("https://store.steampowered.com/widget/" + CONFIG.STEAM_APPID + "/");
   CONFIG.PASS_THROUGH.forEach((k) => { const v = incoming.get(k); if (v) wu.searchParams.set(k, v); });
   if (!wu.searchParams.get("utm_source")) wu.searchParams.set("utm_source", "tiktok_test_1");
+  wu.searchParams.set("l", steamLang());
   widget.src = wu.toString();
 })();
 </script>
